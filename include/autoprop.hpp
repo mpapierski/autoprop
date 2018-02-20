@@ -90,26 +90,28 @@ public:
 
 #define AUTOPROP_BEGIN_AUX(type, counter)                                      \
   using this_type = type;                                                      \
-  static constexpr int CONCAT(attr, counter){0};                               \
+  static constexpr std::size_t CONCAT(attr, counter){0};                       \
   static constexpr Empty CONCAT(names, counter)() noexcept { return {}; }
 
 #define AUTOPROP_BEGIN(type) AUTOPROP_BEGIN_AUX(type, __COUNTER__)
 
-#define AUTOPROP_AUX(name, counter)                                            \
+#define AUTOPROP_AUX(name, counter, counter_prev)                              \
   name;                                                                        \
-  static constexpr int CONCAT(attr, counter){                                  \
-      1 + CONCAT(attr, BOOST_PP_SUB(counter, 1))};                             \
+  static constexpr std::size_t CONCAT(attr, counter){                          \
+      1 + CONCAT(attr, counter_prev)};                                         \
   static constexpr auto CONCAT(names, counter)() noexcept {                    \
-    return makeNode(CONCAT(names, BOOST_PP_SUB(counter, 1))(),                 \
+    return makeNode(CONCAT(names, counter_prev)(),                             \
                     makeAttribute(#name, &this_type::name));                   \
   }
 
-#define AUTOPROP(name) AUTOPROP_AUX(name, __COUNTER__)
+#define AUTOPROP_AUX_PREV(name, counter)                                       \
+  AUTOPROP_AUX(name, counter, BOOST_PP_SUB(counter, 1))
+#define AUTOPROP(name) AUTOPROP_AUX_PREV(name, __COUNTER__)
 
 #define AUTOPROP_END_AUX_PREV(type, counter, counter_prev)                     \
-  static constexpr int kTotalAttributes{CONCAT(attr, counter_prev)};           \
-  static constexpr auto getAttributeList() noexcept {                                 \
-    return CONCAT(names, BOOST_PP_SUB(counter, 1))();                          \
+  static constexpr std::size_t kTotalAttributes{CONCAT(attr, counter_prev)};   \
+  static constexpr auto getAttributeList() noexcept {                          \
+    return CONCAT(names, counter_prev)();                                      \
   }
 
 #define AUTOPROP_END_AUX(type, counter)                                        \

@@ -29,5 +29,8 @@ TEST_CASE("Person has attributes") {
     person.set("age", 1234);
     REQUIRE(person.get<int>("age") == 1234);
   }
-  SECTION("Total attributes") { REQUIRE(person.kTotalAttributes == 3); }
+  SECTION("Total attributes") {
+    static_assert(person.kTotalAttributes == 3);
+    REQUIRE(person.kTotalAttributes == 3);
+  }
 }
