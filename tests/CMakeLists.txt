@@ -1,1 +1,2 @@
-add_executable (tests main.cpp)
+add_executable (tests
+    attributes.cpp)

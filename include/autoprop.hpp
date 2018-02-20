@@ -1,10 +1,7 @@
 #include <boost/preprocessor.hpp>
-#include <iostream>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
-#include <unordered_map>
 
 namespace mpapierski {
 
@@ -51,7 +48,7 @@ constexpr void forEachImpl(Attribute<T, R> &&node, Func &&func) {
 template <typename T> class AutoProp {
 public:
   template <typename Function> void forEach(Function &&f) {
-    auto &&names = static_cast<T *>(this)->all_names();
+    auto &&names = static_cast<T *>(this)->getAttributeList();
     forEachImpl(names, [&](auto &&v) {
       auto && [ key, value ] = v;
       f(std::move(key), static_cast<T *>(this)->*value);
@@ -59,7 +56,7 @@ public:
   }
 
   template <typename Value> void set(std::string_view key, Value value) {
-    auto &&names = static_cast<T *>(this)->all_names();
+    auto &&names = static_cast<T *>(this)->getAttributeList();
     forEachImpl(names, [&](auto &&v) {
       auto && [ name, ptr ] = v;
       if (name == key) {
@@ -69,7 +66,7 @@ public:
   }
 
   template <typename R> constexpr R get(std::string_view key) {
-    auto &&names = static_cast<T *>(this)->all_names();
+    auto &&names = static_cast<T *>(this)->getAttributeList();
     R result;
     forEachImpl(names, [&](auto &&v) {
       auto && [ name, ptr ] = v;
@@ -91,12 +88,17 @@ public:
 #define CONCAT(a, b) CONCAT_(a, b)
 #define CONCAT3(a, b, c) CONCAT3_(a, b, c)
 
-#define AUTOPROP_BEGIN(type)                                                   \
+#define AUTOPROP_BEGIN_AUX(type, counter)                                      \
   using this_type = type;                                                      \
-  static constexpr Empty CONCAT(names, __COUNTER__)() noexcept { return {}; }
+  static constexpr int CONCAT(attr, counter){0};                               \
+  static constexpr Empty CONCAT(names, counter)() noexcept { return {}; }
+
+#define AUTOPROP_BEGIN(type) AUTOPROP_BEGIN_AUX(type, __COUNTER__)
 
 #define AUTOPROP_AUX(name, counter)                                            \
   name;                                                                        \
+  static constexpr int CONCAT(attr, counter){                                  \
+      1 + CONCAT(attr, BOOST_PP_SUB(counter, 1))};                             \
   static constexpr auto CONCAT(names, counter)() noexcept {                    \
     return makeNode(CONCAT(names, BOOST_PP_SUB(counter, 1))(),                 \
                     makeAttribute(#name, &this_type::name));                   \
@@ -104,10 +106,13 @@ public:
 
 #define AUTOPROP(name) AUTOPROP_AUX(name, __COUNTER__)
 
-#define AUTOPROP_END_AUX(type, counter)                                        \
-  static constexpr auto all_names() noexcept {                                 \
+#define AUTOPROP_END_AUX_PREV(type, counter, counter_prev)                     \
+  static constexpr int kTotalAttributes{CONCAT(attr, counter_prev)};           \
+  static constexpr auto getAttributeList() noexcept {                                 \
     return CONCAT(names, BOOST_PP_SUB(counter, 1))();                          \
   }
 
+#define AUTOPROP_END_AUX(type, counter)                                        \
+  AUTOPROP_END_AUX_PREV(type, counter, BOOST_PP_SUB(counter, 1))
 #define AUTOPROP_END(type) AUTOPROP_END_AUX(type, __COUNTER__)
 }
