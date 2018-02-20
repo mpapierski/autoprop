@@ -21,6 +21,7 @@ public:
   int AUTOPROP(age);
   AUTOPROP_END(Person);
 };
+```
 
 `Person` is still the same class, just augmented with additional methods. There is literally zero runtime overhead to iterate over list of attributes to get their names and values.
 
