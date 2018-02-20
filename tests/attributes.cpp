@@ -1,8 +1,11 @@
 #include "autoprop.hpp"
+#include <string>
 #include <vector>
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+
 using namespace mpapierski;
+using namespace std::string_literals;
 
 class Person : public AutoProp<Person> {
 public:
@@ -32,5 +35,10 @@ TEST_CASE("Person has attributes") {
   SECTION("Total attributes") {
     static_assert(person.kTotalAttributes == 3);
     REQUIRE(person.kTotalAttributes == 3);
+  }
+  SECTION("All attributes") {
+    std::vector<std::string> vec;
+    person.forEach([&](auto &&key, auto &&value) { vec.emplace_back(key); });
+    REQUIRE(vec == std::vector<std::string>{"first_name", "last_name", "age"});
   }
 }
