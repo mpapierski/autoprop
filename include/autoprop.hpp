@@ -91,6 +91,7 @@ public:
 #define AUTOPROP_BEGIN_AUX(type, counter)                                      \
   using this_type = type;                                                      \
   static constexpr std::size_t CONCAT(attr, counter){0};                       \
+  static constexpr std::string_view getClassName() noexcept { return #type; }  \
   static constexpr Empty CONCAT(names, counter)() noexcept { return {}; }
 
 #define AUTOPROP_BEGIN(type) AUTOPROP_BEGIN_AUX(type, __COUNTER__)

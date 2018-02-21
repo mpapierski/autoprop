@@ -22,6 +22,7 @@ TEST_CASE("Person has attributes") {
   person.last_name = "Kowalski";
   person.age = 42;
 
+  SECTION("Name of a class") { REQUIRE(Person::getClassName() == "Person"); }
   SECTION("Getting an attribute") {
     REQUIRE(person.get<std::string>("first_name") == "Jan");
     REQUIRE(person.get<std::string>("last_name") == "Kowalski");
