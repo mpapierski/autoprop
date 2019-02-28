@@ -6,3 +6,4 @@ set (CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 include_directories (include)
 add_subdirectory (tests)
+add_subdirectory (examples)
